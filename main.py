@@ -1,15 +1,11 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from time import sleep
 import requests
+import os
 
 def get_filtered_page(base_url):
     """
@@ -22,6 +18,7 @@ def get_filtered_page(base_url):
         soup (BeautifulSoup): The parsed page source using BeautifulSoup.
         filtered_folders (list): The news folders with titles in news_folder_titles.
     """
+    print('Going to ForexFactory.com...')
     chrome_options = Options()
     # chrome_options.add_argument("--headless")  # This argument configures Chrome to run in headless mode.
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
@@ -34,6 +31,7 @@ def get_filtered_page(base_url):
     soup = BeautifulSoup(driver.page_source, 'lxml')
 
     # Close the browser
+    print('Soup Gotten and served!')
     driver.quit()
 
     return soup  # Return both soup and filtered folders
@@ -50,6 +48,8 @@ def scrape_page(soup):
             of a news event.
 
     """
+    print('Scraping...')
+    data_dict = {}
     # Define the target currencies and impact titles
     target_currencies = ['GBP', 'USD']
     impact_titles = ['High Impact Expected', 'Medium Impact Expected', 'Non-Economic']
@@ -65,11 +65,67 @@ def scrape_page(soup):
             currency = currency_cell.find('span').text.strip()  # Get the currency text
             if currency in target_currencies:
                 news_cell = currency_cell.find_next_sibling('td', class_='calendar__cell calendar__event event')
-                print(currency)
-                print(news_cell)
-            # break
+                event = news_cell.text.strip() if news_cell else "No Event"
+
+                # Append the event to the dictionary
+                if currency in data_dict:
+                    data_dict[currency].append(event)  # Append to existing list
+                else:
+                    data_dict[currency] = [event]  # Create a new list if key doesn't exist
+    
+    # If no news found, add a default message
+    if not data_dict:
+        data_dict['No News'] = ['No News Found']
+
+    print('Scraped!' + str(data_dict))    
+    return data_dict
+
+def send_notification(data_dict):
+    """
+    Send a notification to the user.
+
+    Args:
+        data_dict (dict): A dictionary containing the news events.
+
+    Returns:
+        None
+    """
+    print('Sending notification...')
+    url = "https://whin2.p.rapidapi.com/send"
+
+    headers = {
+        "content-type": "application/json",
+        "X-RapidAPI-Key": os.getenv('X-RapidAPI-Key_WHATSAPP'),
+        "X-RapidAPI-Host": os.getenv('X-RapidAPI-Host_WHATSAPP'),
+    }
+    import ipdb; ipdb.set_trace()
+
+    payload = {
+        "text": []
+    }
+
+    for currency, events in data_dict.items():
+        payload["text"].append({
+            "currency": currency,
+            "events": events  # This will list all events for that currency
+        })
+
+    payload = {
+    "text": "\n".join([f"{currency}: {', '.join(events)}" for currency, events in data_dict.items()])
+    }
+
+        
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        print(f"Payload: {payload} \n Status Code: {response.status_code} \n >> Message sent")
+    except Exception as e:
+        print(f"Failed to send notification for {currency}. Error: {e}")
+        return
+
 
 
 if __name__ == "__main__":
     base_url = "https://www.forexfactory.com/calendar?day=today"
     soup = get_filtered_page(base_url)
+    data_dict = scrape_page(soup)
+    send_notification(data_dict)
