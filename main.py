@@ -14,6 +14,7 @@ import requests
 def get_filtered_page(base_url):
     # Set up the Selenium WebDriver
     # import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
     chrome_options = Options()
     # chrome_options.add_argument("--headless")  # This argument configures Chrome to run in headless mode.
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
