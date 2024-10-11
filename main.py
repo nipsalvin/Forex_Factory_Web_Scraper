@@ -98,7 +98,6 @@ def send_notification(data_dict):
         "X-RapidAPI-Key": os.getenv('X-RapidAPI-Key_WHATSAPP'),
         "X-RapidAPI-Host": os.getenv('X-RapidAPI-Host_WHATSAPP'),
     }
-    import ipdb; ipdb.set_trace()
 
     payload = {
         "text": []
