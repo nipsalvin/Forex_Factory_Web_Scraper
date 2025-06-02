@@ -131,8 +131,10 @@ def send_notification(data_dict):
         # Format: "time: Currency"
         message_lines.append(f"{event['time']}: {event['currency']}")
         # Format: "News_event" (replace spaces with underscores)
-        event_name = event['name'].replace(' ', '_')
-        message_lines.append(f"News_{event_name}")
+        # event_name = event['name'].replace(' ', '_')
+        event_name = event['name']
+        # message_lines.append(f"News_{event_name}")
+        message_lines.append(event_name)
         message_lines.append("")  # Empty line after each event
 
     # Remove the last empty line
@@ -151,6 +153,7 @@ def send_notification(data_dict):
     try:
         response = requests.post(url, json=payload, headers=headers)
         print(f"Payload: {payload} \n Status Code: {response.status_code} \n >> Message sent")
+        # print(f"Payload: {payload} \n >> Message sent")
     except Exception as e:
         print(f"Failed to send notification. Error: {e}")
         return
