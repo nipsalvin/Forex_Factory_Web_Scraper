@@ -82,11 +82,13 @@ def scrape_page(soup):
                 news_cell = currency_cell.find_next_sibling('td', class_='calendar__cell calendar__event event')
                 event_name = news_cell.get_text(strip=True) if news_cell else "No Event"
 
-                # Create event info with time, currency, and name
+                # Create event info with time, currency, Impact and name
                 event_info = {
                     "name": event_name,
                     "time": event_time,
-                    "currency": currency
+                    "currency": currency,
+                    "impact": impact_cell.find('span')['title']
+
                 }
 
                 events_list.append(event_info)
@@ -130,11 +132,14 @@ def send_notification(data_dict):
     for event in data_dict.get("events", []):
         # Format: "time: Currency"
         message_lines.append(f"{event['time']}: {event['currency']}")
-        # Format: "News_event" (replace spaces with underscores)
-        # event_name = event['name'].replace(' ', '_')
         event_name = event['name']
         # message_lines.append(f"News_{event_name}")
         message_lines.append(event_name)
+        impact = event['impact']
+        if impact != 'Non-Economic':
+            message_lines.append(f'{impact} Today')
+        else:
+            message_lines.append("It's a bank Holoday. You can chill today. 🧘🏾")
         message_lines.append("")  # Empty line after each event
 
     # Remove the last empty line
