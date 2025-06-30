@@ -135,11 +135,14 @@ def send_notification(data_dict):
         event_name = event['name']
         # message_lines.append(f"News_{event_name}")
         message_lines.append(event_name)
-        impact = event['impact']
-        if impact != 'Non-Economic':
-            message_lines.append(f'{impact} Today')
-        else:
+        impact = event.get('impact', None)
+        if impact == None:
+            message_lines.append("No News Today")
+        elif impact != 'Non-Economic':
+            message_lines.append(f'{impact} on this event')
+        elif impact != None:
             message_lines.append("It's a bank Holoday. You can chill today. 🧘🏾")
+
         message_lines.append("")  # Empty line after each event
 
     # Remove the last empty line
