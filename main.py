@@ -141,7 +141,7 @@ def send_notification(data_dict):
         elif impact != 'Non-Economic':
             message_lines.append(f'{impact} on this event')
         elif impact != None:
-            message_lines.append("It's a bank Holoday. You can chill today. 🧘🏾")
+            message_lines.append("It's a bank Holiday. You can chill today. 🧘🏾")
 
         message_lines.append("")  # Empty line after each event
 
